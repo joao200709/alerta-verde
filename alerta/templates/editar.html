@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Cadastro de área{% endblock %}{% block corpo %}<a class="voltar" href="{{ url_for('minhas_areas') }}">← Minhas áreas</a><div class="folha"><h1>{{ 'Editar área' if area else 'Cadastrar área' }}</h1><form method="post">{{ f.csrf() }}{{ f.resumo(erro) }}
+{{ f.campo('nome','Nome da área',erro,area.get('nome',''),max=120,min=3) }}
+{{ f.selecao('tipo','Tipo',tipos_area,erro,area.get('tipo','')) }}
+{{ f.campo('endereco','Endereço',erro,area.get('endereco',''),min=5) }}
+{{ f.campo('bairro','Bairro',erro,area.get('bairro',''),max=100,min=2) }}
+{{ f.campo('municipio','Município',erro,area.get('municipio',''),max=100,min=2) }}
+{{ f.campo('uf','UF',erro,area.get('uf',''),max=2,min=2) }}
+{% if area.atualizado_em %}<p>Última alteração por {{ area.editor }} em {{ area.atualizado_em|data }}.</p>{% endif %}
+<div class="acoes"><button>Salvar área</button><a href="{{ url_for('minhas_areas') }}">Cancelar</a></div></form></div>{% endblock %}

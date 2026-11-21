@@ -1,0 +1,3 @@
+{% extends "base.html" %}{% block titulo %}Painel do guarda{% endblock %}{% block corpo %}<h1>Painel do guarda</h1><p>{{ g.guarda.nome }}</p><div class="grade">
+<article class="cartao"><h2>Denúncias recebidas</h2><p>Consulte os registros, responda ao visitante e atualize a situação.</p><a class="botao" href="{{ url_for('fila') }}">Ver denúncias</a></article>
+<article class="cartao"><h2>Gerenciar áreas verdes</h2><p>Cadastre praças e parques, edite endereços ou altere a disponibilidade.</p><a class="botao" href="{{ url_for('minhas_areas') }}">Ver minhas áreas</a></article></div>{% endblock %}

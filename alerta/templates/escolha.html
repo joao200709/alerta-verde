@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block titulo %}Fazer denúncia{% endblock %}{% block corpo %}
+<a class="voltar" href="{{ url_for('inicio') }}">← Áreas verdes</a><h1>Como deseja registrar?</h1><p>{{ area.nome }} · {{ area.municipio }}/{{ area.uf }}</p>
+<div class="grade"><article class="cartao"><h2>Denúncia identificada</h2><p>O guarda responsável poderá ver seu nome e e-mail. Você também recebe o comprovante por e-mail.</p><a class="botao" href="{{ url_for('registrar',area=area.id,tipo='PUBLICA') }}">Continuar com identificação</a></article>
+<article class="cartao"><h2>Denúncia anônima</h2><p>Guarde o protocolo e o código de acesso para acompanhar o caso. Você poderá baixar o comprovante.</p><a class="botao" href="{{ url_for('registrar',area=area.id,tipo='ANONIMA') }}">Continuar anonimamente</a></article></div>{% endblock %}

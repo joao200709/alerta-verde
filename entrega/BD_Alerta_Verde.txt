@@ -1,0 +1,270 @@
+Alerta Verde
+
+Banco de Dados · 3AF · CESMAC · Sistemas de Informação · 2026.2
+
+Diogo Paes Maia e João Paulo de Castro Portela
+
+No Alerta Verde, quem encontra um problema numa praça ou num parque pode fazer uma denúncia identificada ou anônima. Com o protocolo e o código de acesso, acompanha a resposta do guarda responsável.
+
+Usamos Astra 6.2 nas tabelas, na trigger e nas permissões. Para esta entrega, editamos a redação dos prompts e usamos IA na organização e na apresentação do PDF. Escrevemos o índice e a view à mão.
+
+Tabelas
+
+Prompt
+
+Monte um script PostgreSQL com as quatro tabelas do Alerta Verde. Use nosso documento de requisitos como referência. Quem visita o site pode denunciar um problema numa praça ou num parque e acompanhar o caso com protocolo e código, sem criar conta. O guarda entra com e-mail e senha e atende as denúncias das áreas pelas quais responde.
+
+Comece por guarda. Cada guarda precisa de id automático, nome de 3 a 120 caracteres, e-mail válido de até 254 e senha_hash. Confira o formato do e-mail e use um índice único em lower(email) para ignorar diferenças de maiúsculas e minúsculas. A conta começa ativa. Guarde criado_em, tentativas_falhas, primeira_falha_em e bloqueado_ate. O contador começa em zero e não pode ficar negativo. O programa cuida do bloqueio de 15 minutos após cinco erros em 15 minutos.
+
+Em area_verde, use id automático e guarda_id obrigatório. O nome tem de 3 a 120 caracteres. O tipo pode ser PRACA ou PARQUE. O endereço tem de 5 a 200 caracteres, bairro e município de 2 a 100 cada, e a UF tem duas letras. A área começa ativa e desativá-la deve preservar seus registros. Guarde criado_em. Deixe atualizado_por e atualizado_em nulos no cadastro. Quando o programa registrar uma edição, exija os dois juntos e vincule atualizado_por ao guarda que editou. Crie um índice único para nome, endereço, município e UF. Nos três primeiros campos, ignore diferenças de caixa, espaços nas pontas e espaços repetidos. Compare a UF em maiúsculas.
+
+Em denuncia, use id automático, area_id obrigatório e protocolo único de até 20 caracteres. Guarde o verificador em codigo_acesso_hash e exija um token_envio único de até 64 caracteres. Se o formulário reenviar o mesmo token, o banco deve impedir uma segunda linha. As categorias são LIXO, VEGETACAO, VANDALISMO, INFRAESTRUTURA e OUTROS. A descrição tem de 20 a 2.000 caracteres e o ponto de referência, de 3 a 200. A foto é opcional. Em foto_arquivo, guarde só o nome do arquivo.
+
+Quando o tipo for PUBLICA, exija nome_denunciante de 3 a 120 caracteres e email_denunciante válido de até 254. Para ANONIMA, os dois campos devem ser nulos. Use RECEBIDA como valor padrão de situacao. Os outros valores aceitos são EM_ANALISE, EM_ATENDIMENTO, RESOLVIDA e REJEITADA. Inicie criado_em e atualizado_em com now(). O programa atualiza atualizado_em a cada atendimento.
+
+Use historico_denuncia para acrescentar um evento a cada recebimento ou resposta. Cada linha tem id automático, denuncia_id, tipo_evento, situação anterior e atual, texto obrigatório de até 500 caracteres, com pelo menos um caractere após aparar os espaços nas pontas, autor_guarda_id e criado_em. Use as mesmas situações da denúncia. No RECEBIMENTO, a situação atual é RECEBIDA e a anterior e o autor ficam nulos. Na ATUALIZACAO, exija o guarda, a situação anterior e pelo menos 10 caracteres de texto. O guarda pode responder e manter a situação atual.
+
+Crie as tabelas nessa ordem e use chaves estrangeiras nos vínculos. Um guarda pode cuidar de várias áreas e assinar várias respostas. Uma área pode receber várias denúncias e cada denúncia pode ter vários eventos. Use ON DELETE RESTRICT para proteger os guardas, as áreas e as denúncias que ainda tenham registros vinculados. Use nomes em português, em minúsculas, sem acento e com sublinhado. Entregue o SQL das quatro tabelas, com as restrições e os dois índices únicos, e explique brevemente o que cada tabela guarda.
+
+Guarda
+
+CREATE TABLE guarda (
+    id                integer GENERATED ALWAYS AS IDENTITY,
+    nome              varchar(120) NOT NULL,
+    email             varchar(254) NOT NULL,
+    senha_hash        text         NOT NULL,
+    ativo             boolean      NOT NULL DEFAULT true,
+    tentativas_falhas integer      NOT NULL DEFAULT 0,
+    primeira_falha_em timestamptz,
+    bloqueado_ate     timestamptz,
+    criado_em         timestamptz  NOT NULL DEFAULT now(),
+    CONSTRAINT pk_guarda PRIMARY KEY (id),
+    CONSTRAINT ck_guarda_nome
+        CHECK (char_length(btrim(nome)) BETWEEN 3 AND 120),
+    CONSTRAINT ck_guarda_email_formato
+        CHECK (email ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'),
+    CONSTRAINT ck_guarda_senha_hash
+        CHECK (char_length(senha_hash) > 0),
+    CONSTRAINT ck_guarda_tentativas_falhas
+        CHECK (tentativas_falhas >= 0)
+);
+CREATE UNIQUE INDEX uq_guarda_email_lower ON guarda (lower(email COLLATE "und-x-icu"));
+
+Áreas verdes e denúncias
+
+As chaves primárias identificam cada registro (integridade de entidade). As estrangeiras ligam cada denúncia a uma área cadastrada (referencial). Os tipos e os CHECKs limitam os valores aceitos (domínio). Uma regra nossa exige nome e e-mail nulos nas denúncias anônimas (integridade definida pelo usuário).
+
+CREATE TABLE area_verde (
+    id              integer GENERATED ALWAYS AS IDENTITY,
+    nome            varchar(120) NOT NULL,
+    tipo            varchar(10)  NOT NULL,
+    endereco        varchar(200) NOT NULL,
+    bairro          varchar(100) NOT NULL,
+    municipio       varchar(100) NOT NULL,
+    uf              char(2)      NOT NULL,
+    ativa           boolean      NOT NULL DEFAULT true,
+    guarda_id       integer      NOT NULL,
+    criado_em       timestamptz  NOT NULL DEFAULT now(),
+    atualizado_por  integer,
+    atualizado_em   timestamptz,
+    CONSTRAINT pk_area_verde PRIMARY KEY (id),
+    CONSTRAINT fk_area_verde_guarda
+        FOREIGN KEY (guarda_id) REFERENCES guarda (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_area_verde_atualizado_por
+        FOREIGN KEY (atualizado_por) REFERENCES guarda (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_area_verde_nome
+        CHECK (char_length(btrim(nome)) BETWEEN 3 AND 120),
+    CONSTRAINT ck_area_verde_tipo
+        CHECK (tipo IN ('PRACA', 'PARQUE')),
+    CONSTRAINT ck_area_verde_endereco
+        CHECK (char_length(btrim(endereco)) BETWEEN 5 AND 200),
+    CONSTRAINT ck_area_verde_bairro
+        CHECK (char_length(btrim(bairro)) BETWEEN 2 AND 100),
+    CONSTRAINT ck_area_verde_municipio
+        CHECK (char_length(btrim(municipio)) BETWEEN 2 AND 100),
+    CONSTRAINT ck_area_verde_uf
+        CHECK (uf ~ '^[A-Za-z]{2}$'),
+    CONSTRAINT ck_area_verde_atualizacao
+        CHECK ((atualizado_por IS NULL) = (atualizado_em IS NULL))
+);
+CREATE UNIQUE INDEX uq_area_verde_identidade ON area_verde (
+    lower(regexp_replace(btrim(nome),      '\s+', ' ', 'g') COLLATE "und-x-icu"),
+    lower(regexp_replace(btrim(endereco),  '\s+', ' ', 'g') COLLATE "und-x-icu"),
+    lower(regexp_replace(btrim(municipio), '\s+', ' ', 'g') COLLATE "und-x-icu"),
+    upper(uf)
+);
+
+CREATE TABLE denuncia (
+    id                  integer GENERATED ALWAYS AS IDENTITY,
+    protocolo           varchar(20)  NOT NULL,
+    codigo_acesso_hash  text         NOT NULL,
+    token_envio         varchar(64)  NOT NULL,
+    area_id             integer      NOT NULL,
+    categoria           varchar(20)  NOT NULL,
+    descricao           text         NOT NULL,
+    ponto_referencia    varchar(200) NOT NULL,
+    foto_arquivo        varchar(255),
+    tipo                varchar(10)  NOT NULL,
+    nome_denunciante    varchar(120),
+    email_denunciante   varchar(254),
+    situacao            varchar(20)  NOT NULL DEFAULT 'RECEBIDA',
+    criado_em           timestamptz  NOT NULL DEFAULT now(),
+    atualizado_em       timestamptz  NOT NULL DEFAULT now(),
+    CONSTRAINT pk_denuncia PRIMARY KEY (id),
+    CONSTRAINT uq_denuncia_protocolo UNIQUE (protocolo),
+    CONSTRAINT uq_denuncia_token_envio UNIQUE (token_envio),
+    CONSTRAINT fk_denuncia_area
+        FOREIGN KEY (area_id) REFERENCES area_verde (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_denuncia_codigo_hash
+        CHECK (char_length(codigo_acesso_hash) > 0),
+    CONSTRAINT ck_denuncia_categoria
+        CHECK (categoria IN ('LIXO', 'VEGETACAO', 'VANDALISMO', 'INFRAESTRUTURA', 'OUTROS')),
+    CONSTRAINT ck_denuncia_descricao
+        CHECK (char_length(btrim(descricao)) BETWEEN 20 AND 2000),
+    CONSTRAINT ck_denuncia_ponto_referencia
+        CHECK (char_length(btrim(ponto_referencia)) BETWEEN 3 AND 200),
+    CONSTRAINT ck_denuncia_tipo
+        CHECK (tipo IN ('PUBLICA', 'ANONIMA')),
+    CONSTRAINT ck_denuncia_nome_denunciante
+        CHECK (nome_denunciante IS NULL
+               OR char_length(btrim(nome_denunciante)) BETWEEN 3 AND 120),
+    CONSTRAINT ck_denuncia_email_denunciante
+        CHECK (email_denunciante IS NULL
+               OR email_denunciante ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'),
+    CONSTRAINT ck_denuncia_identificacao
+        CHECK (
+            (tipo = 'PUBLICA'
+                AND nome_denunciante  IS NOT NULL
+                AND email_denunciante IS NOT NULL)
+            OR
+            (tipo = 'ANONIMA'
+                AND nome_denunciante  IS NULL
+                AND email_denunciante IS NULL)
+        ),
+    CONSTRAINT ck_denuncia_situacao
+        CHECK (situacao IN ('RECEBIDA', 'EM_ANALISE', 'EM_ATENDIMENTO', 'RESOLVIDA', 'REJEITADA'))
+);
+
+Histórico da denúncia
+
+CREATE TABLE historico_denuncia (
+    id                 integer GENERATED ALWAYS AS IDENTITY,
+    denuncia_id        integer      NOT NULL,
+    tipo_evento        varchar(15)  NOT NULL,
+    situacao_anterior  varchar(20),
+    situacao_atual     varchar(20)  NOT NULL,
+    texto              varchar(500) NOT NULL,
+    autor_guarda_id    integer,
+    criado_em          timestamptz  NOT NULL DEFAULT now(),
+    CONSTRAINT pk_historico_denuncia PRIMARY KEY (id),
+    CONSTRAINT fk_historico_denuncia
+        FOREIGN KEY (denuncia_id) REFERENCES denuncia (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_historico_autor_guarda
+        FOREIGN KEY (autor_guarda_id) REFERENCES guarda (id) ON DELETE RESTRICT,
+    CONSTRAINT ck_historico_tipo_evento
+        CHECK (tipo_evento IN ('RECEBIMENTO', 'ATUALIZACAO')),
+    CONSTRAINT ck_historico_situacao_anterior
+        CHECK (situacao_anterior IS NULL
+               OR situacao_anterior IN ('RECEBIDA', 'EM_ANALISE', 'EM_ATENDIMENTO', 'RESOLVIDA', 'REJEITADA')),
+    CONSTRAINT ck_historico_situacao_atual
+        CHECK (situacao_atual IN ('RECEBIDA', 'EM_ANALISE', 'EM_ATENDIMENTO', 'RESOLVIDA', 'REJEITADA')),
+    CONSTRAINT ck_historico_texto
+        CHECK (char_length(btrim(texto)) >= 1
+               AND (tipo_evento <> 'ATUALIZACAO' OR char_length(btrim(texto)) >= 10)),
+    CONSTRAINT ck_historico_coerencia
+        CHECK (
+            (tipo_evento = 'RECEBIMENTO'
+                AND situacao_anterior IS NULL
+                AND situacao_atual = 'RECEBIDA'
+                AND autor_guarda_id IS NULL)
+            OR
+            (tipo_evento = 'ATUALIZACAO'
+                AND situacao_anterior IS NOT NULL
+                AND autor_guarda_id IS NOT NULL)
+        )
+);
+
+Trigger de recebimento
+
+Prompt
+
+Faça o primeiro registro do histórico nascer junto com a denúncia. Use as tabelas de 01_tabelas.sql e crie uma trigger AFTER INSERT em denuncia, executada uma vez por linha, com uma função em PL/pgSQL.
+
+Em historico_denuncia, preencha denuncia_id com NEW.id, o ID da denúncia recém-inserida. Grave RECEBIMENTO como tipo do evento e RECEBIDA como situação atual. Deixe a situação anterior e o guarda nulos e grave o texto “Denúncia recebida pelo sistema.” Confira se o registro passa pelas restrições ck_historico_coerencia e ck_historico_texto.
+
+Entregue a função e a trigger em um único bloco SQL, sem alterar as tabelas. Use nomes em português, em minúsculas, sem acento e com sublinhado.
+
+CREATE OR REPLACE FUNCTION fn_denuncia_registrar_recebimento()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    INSERT INTO historico_denuncia (
+        denuncia_id, tipo_evento, situacao_anterior, situacao_atual, texto, autor_guarda_id
+    ) VALUES (
+        NEW.id, 'RECEBIMENTO', NULL, 'RECEBIDA', 'Denúncia recebida pelo sistema.', NULL
+    );
+    RETURN NULL;
+END;
+$$;
+CREATE TRIGGER trg_denuncia_registrar_recebimento
+AFTER INSERT ON denuncia FOR EACH ROW
+EXECUTE PROCEDURE fn_denuncia_registrar_recebimento();
+
+Índice para o filtro de situação
+
+CREATE INDEX indice_denuncia_situacao
+ON denuncia (situacao);
+
+Contas e permissões
+
+Prompt
+
+Prepare os acessos ao banco do Alerta Verde usando as tabelas de 01_tabelas.sql e a trigger de 02_trigger.sql. As quatro tabelas já existem no schema public. Precisamos de três contas com LOGIN.
+
+Transfira as quatro tabelas para alerta_admin, com as sequências de identidade que as acompanham. Essa conta fica dona das tabelas e precisa de acesso completo ao schema para criar objetos.
+
+O site usa alerta_app. Dê SELECT, INSERT e UPDATE em guarda, area_verde e denuncia. Em historico_denuncia, libere só SELECT e INSERT. Conceda USAGE no schema public e USAGE e SELECT nas sequências desse schema. Assim o site consegue inserir a denúncia e a trigger consegue registrar o recebimento. Deixe DELETE e alterações na estrutura fora dessas permissões.
+
+Para alerta_leitura, libere o uso do schema e, por enquanto, apenas SELECT em area_verde. As tabelas de guardas e denúncias têm hashes e dados pessoais. Vamos liberar o acesso aos relatórios quando criarmos a view.
+
+Retire de PUBLIC os privilégios sobre o schema public e sobre todas as tabelas e sequências que já existem nele. Crie as contas com LOGIN e deixe as senhas para definirmos depois, pelo psql. Entregue essas permissões em um bloco SQL. A única mudança nas tabelas é a troca de proprietário.
+
+CREATE ROLE alerta_admin   LOGIN;
+CREATE ROLE alerta_app     LOGIN;
+CREATE ROLE alerta_leitura LOGIN;
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON ALL TABLES    IN SCHEMA public FROM PUBLIC;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC;
+ALTER TABLE guarda             OWNER TO alerta_admin;
+ALTER TABLE area_verde         OWNER TO alerta_admin;
+ALTER TABLE denuncia           OWNER TO alerta_admin;
+ALTER TABLE historico_denuncia OWNER TO alerta_admin;
+GRANT ALL ON SCHEMA public TO alerta_admin;
+GRANT USAGE ON SCHEMA public TO alerta_app;
+GRANT SELECT, INSERT, UPDATE ON guarda     TO alerta_app;
+GRANT SELECT, INSERT, UPDATE ON area_verde TO alerta_app;
+GRANT SELECT, INSERT, UPDATE ON denuncia   TO alerta_app;
+GRANT SELECT, INSERT ON historico_denuncia TO alerta_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO alerta_app;
+GRANT USAGE ON SCHEMA public TO alerta_leitura;
+GRANT SELECT ON area_verde TO alerta_leitura;
+
+View de acompanhamento
+
+A conta de relatórios consulta o andamento pela view. O nome e o e-mail de quem denunciou ficam fora do resultado.
+
+CREATE OR REPLACE VIEW view_acompanhamento_denuncia AS
+SELECT d.protocolo,
+       d.categoria,
+       d.situacao,
+       d.tipo,
+       d.criado_em,
+       d.atualizado_em,
+       a.nome      AS area_nome,
+       a.bairro    AS area_bairro,
+       a.municipio AS area_municipio,
+       a.uf        AS area_uf,
+       g.nome      AS guarda_responsavel
+FROM denuncia d
+JOIN area_verde a ON a.id = d.area_id
+JOIN guarda g     ON g.id = a.guarda_id;
+GRANT SELECT ON view_acompanhamento_denuncia TO alerta_leitura;

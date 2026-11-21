@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}{{ 'Área administrativa' if administrativo else 'Acompanhar denúncia' }}{% endblock %}{% block corpo %}
+<div class="folha"><h1>{{ 'Acesso do guarda' if administrativo else 'Acompanhar denúncia' }}</h1><p>{{ 'Entre para atender denúncias e gerenciar suas áreas verdes.' if administrativo else 'Use o protocolo e o código que constam no seu comprovante.' }}</p>
+<form method="post">{{ f.csrf() }}{{ f.resumo(erro) }}
+{% if administrativo %}{{ f.campo('email','E-mail',tipo='email',max=254,autocomplete='username') }}{{ f.campo('senha','Senha',tipo='password',max=512,autocomplete='current-password') }}{% else %}{{ f.campo('protocolo','Protocolo',max=20) }}{{ f.campo('codigo','Código de acesso',tipo='password',max=128) }}{% endif %}
+<button>{{ 'Entrar' if administrativo else 'Consultar andamento' }}</button></form></div>{% endblock %}

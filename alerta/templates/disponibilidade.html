@@ -1,0 +1,3 @@
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Disponibilidade da área{% endblock %}{% block corpo %}<div class="folha"><h1>{{ 'Desativar' if area.ativa else 'Ativar' }} área?</h1>
+<p>{{ area.nome }} {{ 'deixará de receber novas denúncias. Os registros anteriores continuarão disponíveis.' if area.ativa else 'voltará a aparecer na consulta pública.' }}</p>
+<form class="acoes" method="post">{{ f.csrf() }}<input type="hidden" name="ativa" value="{{ 0 if area.ativa else 1 }}"><button>Confirmar</button><a href="{{ url_for('minhas_areas') }}">Cancelar</a></form></div>{% endblock %}

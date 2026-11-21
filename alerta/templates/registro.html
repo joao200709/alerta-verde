@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Registrar denúncia{% endblock %}{% block corpo %}
+<a class="voltar" href="{{ url_for('escolher',area=area.id) }}">← Tipo de denúncia</a>
+<h1>Denúncia {{ tipo|rotulo|lower }}</h1><p>{{ area.nome }} · {{ area.endereco }} · {{ area.municipio }}/{{ area.uf }}</p>
+<form method="post" enctype="multipart/form-data" class="folha">{{ f.csrf() }}<input type="hidden" name="envio" value="{{ envio }}">
+{{ f.resumo(erro) }}{{ f.selecao('categoria','Categoria',categorias,erro) }}
+{{ f.longo('descricao','Descrição do problema (20 a 2.000 caracteres)',erro,20,2000) }}
+{{ f.campo('ponto_referencia','Ponto de referência',erro,min=3) }}
+<label>Foto do problema (opcional)<input type="file" name="foto" accept="image/png"><small>Uma foto ajuda o guarda a localizar e avaliar o problema. Envie um PNG de até 5 MB.</small>{{ f.falha(erro,'foto') }}</label>
+{% if tipo=='PUBLICA' %}{{ f.campo('nome','Seu nome',erro,max=120,min=3,autocomplete='name') }}{{ f.campo('email','Seu e-mail',erro,tipo='email',max=254,autocomplete='email') }}{{ f.campo('confirma_email','Confirme o e-mail do comprovante',erro,tipo='email',max=254) }}
+{% else %}<fieldset disabled><legend>Registro anônimo</legend><label>Nome<input disabled></label><label>E-mail<input disabled></label></fieldset>{% endif %}
+<button>Enviar denúncia</button></form>{% endblock %}

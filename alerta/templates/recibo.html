@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Comprovante de registro{% endblock %}{% block corpo %}<div class="folha"><h1>Denúncia recebida</h1><p>{{ recibo.criado_em|data }}</p>
+<dl><dt>Protocolo</dt><dd class="codigo" id="protocolo">{{ recibo.protocolo }}</dd><dt>Código de acesso</dt><dd class="codigo" id="codigo">{{ codigo }}</dd></dl>
+<p>Guarde o protocolo e o código para acompanhar o atendimento.</p>
+{% if not novo %}<p class="aviso">Este envio já estava registrado.</p>{% elif enviado is sameas true %}<p>O comprovante foi enviado ao seu e-mail.</p>{% elif enviado is sameas false %}<p class="aviso">A denúncia foi registrada. O envio por e-mail falhou. Baixe o PDF abaixo.</p>{% endif %}
+<div class="acoes"><form action="{{ url_for('baixar') }}" method="post">{{ f.csrf() }}<input type="hidden" name="protocolo" value="{{ recibo.protocolo }}"><input type="hidden" name="codigo" value="{{ codigo }}"><button>Baixar PDF</button></form>
+<button type="button" id="copiar" hidden>Copiar código</button></div><p id="copia-status" role="status"></p><a href="{{ url_for('acompanhar') }}">Acompanhar denúncia →</a></div>{% endblock %}
