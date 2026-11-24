@@ -1,0 +1,5 @@
+{% macro icone(nome) -%}<svg class="icone" aria-hidden="true" focusable="false"><use href="{{ url_for('static',filename='icones.svg') }}#{{ nome }}"></use></svg>{%- endmacro %}
+{% macro item_nav(rota,rotulo,simbolo,ativo) -%}<a href="{{ url_for(rota) }}" {% if ativo %}aria-current="{{ 'page' if request.endpoint==rota else 'location' }}"{% endif %}>{{ icone(simbolo) }} {{ rotulo }}</a>{%- endmacro %}
+{% macro faixa(titulo,descricao) -%}<section class="faixa"><div class="limite"><h1>{{ titulo }}</h1><p>{{ descricao }}</p>{% if caller is defined %}{{ caller() }}{% endif %}</div></section>{%- endmacro %}
+{% macro selecionada(area,tipo=none) %}<div class="selecionada">{{ icone('arvore') }}<div><small>Área selecionada</small><strong>{{ area.nome }}</strong></div><span>{{ area.bairro }} · {{ area.municipio }}/{{ area.uf }}</span>{% if tipo %}<b class="etiqueta">{{ 'Denúncia pública' if tipo=='PUBLICA' else 'Denúncia anônima' }}</b>{% endif %}</div>{% endmacro %}
+{% macro situacao(valor) -%}<span class="etiqueta estado-{{ valor|lower }}">{{ valor|rotulo }}</span>{%- endmacro %}

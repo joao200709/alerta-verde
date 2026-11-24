@@ -1,0 +1,5 @@
+<div class="tabela"><table><thead><tr><th>Nome</th><th>Tipo</th><th>Situação</th><th>Ações</th></tr></thead>
+<tbody>{% for a in linhas %}<tr><td><strong>{{ a.nome }}</strong><small>{{ a.endereco }} · {{ a.bairro }}</small></td><td>{{ a.tipo|rotulo }}</td>
+<td><span class="etiqueta {{ 'inativa' if not a.ativa }}">{{ 'Ativa' if a.ativa else 'Inativa' }}</span></td>
+<td><div class="acoes"><a href="{{ url_for('editar',area=a.id) }}">Editar</a><a href="{{ url_for('disponibilidade',area=a.id) }}">{{ 'Desativar' if a.ativa else 'Ativar' }}</a></div></td></tr>
+{% else %}<tr><td colspan="4">Nenhuma área encontrada.</td></tr>{% endfor %}</tbody></table></div>

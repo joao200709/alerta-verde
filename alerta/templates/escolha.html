@@ -1,4 +1,11 @@
-{% extends "base.html" %}{% block titulo %}Fazer denúncia{% endblock %}{% block corpo %}
-<a class="voltar" href="{{ url_for('inicio') }}">← Áreas verdes</a><h1>Como deseja registrar?</h1><p>{{ area.nome }} · {{ area.municipio }}/{{ area.uf }}</p>
-<div class="grade"><article class="cartao"><h2>Denúncia identificada</h2><p>O guarda responsável poderá ver seu nome e e-mail. Você também recebe o comprovante por e-mail.</p><a class="botao" href="{{ url_for('registrar',area=area.id,tipo='PUBLICA') }}">Continuar com identificação</a></article>
-<article class="cartao"><h2>Denúncia anônima</h2><p>Guarde o protocolo e o código de acesso para acompanhar o caso. Você poderá baixar o comprovante.</p><a class="botao" href="{{ url_for('registrar',area=area.id,tipo='ANONIMA') }}">Continuar anonimamente</a></article></div>{% endblock %}
+{% extends "base.html" %}{% from "componentes.html" import faixa,selecionada,icone %}
+{% block titulo %}Registrar denúncia{% endblock %}
+{% block faixa %}{{ faixa('Registrar denúncia','Descreva o problema ambiental de forma simples, segura e rápida.') }}{% endblock %}
+{% block corpo %}{{ selecionada(area) }}
+<section class="folha"><h2>Como deseja fazer a denúncia?</h2><p>Escolha o tipo de denúncia de acordo com sua preferência.</p>
+<div class="duas">{% for tipo,rotulo,simbolo,texto in [
+('PUBLICA','Denúncia pública','pessoa','Informe seu nome e e-mail para receber o comprovante também por e-mail. Apenas o guarda responsável vê sua identificação.'),
+('ANONIMA','Denúncia anônima','anonimo','Seu nome e e-mail não são solicitados. Guarde o protocolo e o código de acesso para acompanhar a denúncia.')] %}
+<article class="opcao"><div class="opcao-titulo"><span class="pictograma">{{ icone(simbolo) }}</span><h3>{{ rotulo }}</h3></div><p>{{ texto }}</p>
+<a class="botao" aria-label="Escolher {{ rotulo|lower }}" href="{{ url_for('registrar',area=area.id,tipo=tipo) }}">Escolher</a></article>{% endfor %}</div>
+<a class="secundario" href="{{ url_for('inicio') }}">← Voltar</a></section>{% endblock %}

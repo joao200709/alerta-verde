@@ -1,8 +1,19 @@
-{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Atendimento da denúncia{% endblock %}{% block corpo %}
-<a class="voltar" href="{{ url_for('fila' if privado else 'acompanhar') }}">← {{ 'Denúncias recebidas' if privado else 'Nova consulta' }}</a>
-<h1>{{ d.area }}</h1><p class="sub">{{ d.protocolo }} · {{ d.criado_em|data }}</p>
-<section class="folha"><span class="etiqueta">{{ d.situacao|rotulo }}</span><h2>{{ d.categoria|rotulo }}</h2><p class="multilinha">{{ d.descricao }}</p><dl><dt>Ponto de referência</dt><dd>{{ d.ponto_referencia }}</dd>
-{% if privado %}<dt>Identificação</dt><dd>{{ d.nome ~ ' · ' ~ d.email if d.nome else 'Denúncia anônima' }}</dd>{% endif %}</dl>
-{% if d.foto_arquivo %}<img class="foto" src="{{ url_for('foto_interna' if privado else 'foto_publica',numero=d.id) }}" alt="Foto anexada à denúncia">{% endif %}</section>
-<section class="folha"><h2>Histórico de atendimento</h2><ol class="historico">{% for h in d.historico %}<li><strong>{{ h.situacao_anterior|rotulo ~ ' → ' if h.situacao_anterior and h.situacao_anterior!=h.situacao_atual else '' }}{{ h.situacao_atual|rotulo }}</strong><small>{{ h.criado_em|data }} · {{ h.autor }}</small><p class="multilinha">{{ h.texto }}</p></li>{% endfor %}</ol></section>
-{% if privado %}<section class="folha"><h2>{{ 'Atualizar atendimento' if destinos else 'Atendimento encerrado' }}</h2>{{ f.resumo(erro) }}{% if erro and erro.campo=='versao' %}<a href="{{ url_for('detalhe',numero=d.id) }}">Recarregar atendimento</a>{% elif destinos %}<form method="post">{{ f.csrf() }}<input type="hidden" name="versao" value="{{ d.atualizado_em.isoformat() }}">{{ f.selecao('situacao','Situação após a resposta',destinos,erro,d.situacao) }}{{ f.longo('resposta','Resposta ao visitante (10 a 500 caracteres)',erro,10,500) }}<p>O visitante poderá ler sua resposta. Preserve os dados pessoais.</p><button>Salvar atualização</button></form>{% endif %}</section>{% endif %}{% endblock %}
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% from "componentes.html" import faixa,situacao %}
+{% block titulo %}{{ 'Atualizar atendimento' if privado else 'Acompanhar denúncia' }}{% endblock %}
+{% block faixa %}{% if not privado %}{{ faixa('Acompanhar denúncia','Informe o protocolo e o código de acesso para ver o andamento.') }}{% endif %}{% endblock %}
+{% macro descricao() %}<h3>Descrição da denúncia</h3><p class="multilinha">{{ d.descricao }}</p>
+<dl><dt>Ponto de referência</dt><dd>{{ d.ponto_referencia }}</dd>{% if privado %}<dt>Identificação</dt><dd>{{ d.nome ~ ' · ' ~ d.email if d.nome else 'Denúncia anônima' }}</dd>{% endif %}</dl>
+{% if d.foto_arquivo %}<img class="foto" src="{{ url_for('foto_interna' if privado else 'foto_publica',numero=d.id) }}" alt="Foto anexada à denúncia">{% endif %}{% endmacro %}
+{% macro historico() %}<h3>Histórico de atendimento</h3><ol class="historico">{% for h in d.historico %}<li><strong>{{ h.situacao_anterior|rotulo ~ ' → ' if h.situacao_anterior and h.situacao_anterior!=h.situacao_atual else '' }}{{ h.situacao_atual|rotulo }}</strong> <small>{{ h.criado_em|data }} · {{ h.autor }}</small><p class="multilinha">{{ h.texto }}</p></li>{% endfor %}</ol>{% endmacro %}
+{% block corpo %}
+{% if privado %}<h1>Atualizar atendimento</h1><p>Depois de abrir uma denúncia, o guarda pode responder e alterar a situação.</p><div class="duas atendimento">
+{% else %}{% include 'consulta.html' %}{% endif %}
+<section class="folha"><small>{{ 'Denúncia ' ~ d.protocolo if privado else 'Resultado da consulta' }}</small><div class="linha"><h2>{{ d.area }}</h2>{{ situacao(d.situacao) }}</div><p>{{ d.categoria|rotulo }} · Recebida em {{ d.criado_em|data }}</p>
+<div class="{{ 'duas' if not privado }}"><div>{{ descricao() }}</div><div>{{ historico() }}</div></div></section>
+{% if privado %}<section class="folha"><h2>{{ 'Registrar resposta' if destinos else 'Atendimento encerrado' }}</h2>{{ f.resumo(erro) }}
+{% if erro and erro.campo=='versao' %}<a href="{{ url_for('detalhe',numero=d.id) }}">Recarregar atendimento</a>
+{% elif destinos %}<form method="post">{{ f.csrf() }}<input type="hidden" name="versao" value="{{ d.atualizado_em.isoformat() }}">
+{{ f.selecao('situacao','Nova situação',destinos,erro,d.situacao) }}{{ f.longo('resposta','Resposta ou justificativa',erro,10,500) }}
+<small>De 10 a 500 caracteres. O visitante poderá ler sua resposta.</small><p class="aviso">A resposta e a mudança de situação serão gravadas juntas no histórico.</p>
+<div class="acoes fim"><a class="secundario" href="{{ url_for('fila') }}">Voltar às denúncias</a><button>Salvar atualização</button></div></form>{% else %}<a href="{{ url_for('fila') }}">Voltar às denúncias</a>{% endif %}</section></div>{% endif %}
+{% endblock %}

@@ -1,13 +1,25 @@
+{% from "componentes.html" import icone, item_nav with context %}
+{% set interno = request.endpoint in ('painel','minhas_areas','editar','disponibilidade','fila','detalhe') %}
 <!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{% block titulo %}Início{% endblock %} · Alerta Verde</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
-<script defer src="{{ url_for('static', filename='acoes.js') }}"></script></head>
+<link rel="stylesheet" href="{{ url_for('static',filename='estilo.css') }}">
+<script defer src="{{ url_for('static',filename='acoes.js') }}"></script></head>
 <body><a class="salto" href="#conteudo">Ir para o conteúdo</a>
-<header><div class="barra"><a class="marca" href="{{ url_for('inicio') }}"><i aria-hidden="true"></i>Alerta Verde</a>
-<nav aria-label="Principal"><a href="{{ url_for('inicio') }}">Início</a><a href="{{ url_for('acompanhar') }}">Acompanhar denúncia</a>
-<a href="{{ url_for('painel') }}">Área administrativa</a>
-{% if session.get('guarda') %}<form method="post" action="{{ url_for('sair') }}"><input type="hidden" name="csrf" value="{{ session.csrf }}"><button class="link">Sair</button></form>{% endif %}</nav></div></header>
-<main id="conteudo">{% for mensagem in get_flashed_messages() %}<p class="aviso" role="status">{{ mensagem }}</p>{% endfor %}
-{% block corpo %}{% endblock %}</main><footer>Alerta Verde <span>Praças e parques</span></footer></body></html>
+<header class="topo"><div class="limite barra">
+<a class="marca" href="{{ url_for('inicio') }}">{{ icone('folha') }} Alerta Verde</a>
+<nav aria-label="Principal">
+{{ item_nav('inicio','Início','inicio',request.endpoint in ('inicio','escolher','registrar')) }}
+{{ item_nav('acompanhar','Acompanhar denúncia','busca',request.endpoint=='acompanhar') }}
+{{ item_nav('painel','Área administrativa','ajustes',interno or request.endpoint=='login') }}
+</nav></div></header>
+<div class="{{ 'layout-interno' if interno }}">
+{% if interno %}<aside><a class="marca" href="{{ url_for('painel') }}">{{ icone('folha') }} Alerta Verde</a>
+<nav aria-label="Menu do guarda">{{ item_nav('painel','Painel','inicio',request.endpoint=='painel') }}
+{{ item_nav('fila','Denúncias recebidas','alerta',request.endpoint in ('fila','detalhe')) }}
+{{ item_nav('minhas_areas','Gerenciar áreas verdes','arvore',request.endpoint in ('minhas_areas','editar','disponibilidade')) }}</nav>
+<form method="post" action="{{ url_for('sair') }}"><input type="hidden" name="csrf" value="{{ session.csrf }}"><button class="sair">{{ icone('sair') }} Sair</button></form></aside>{% endif %}
+<main id="conteudo">{% block faixa %}{% endblock %}
+<div class="limite conteudo">{% for mensagem in get_flashed_messages() %}<p class="aviso" role="status">{{ mensagem }}</p>{% endfor %}
+{% block corpo %}{% endblock %}</div></main></div></body></html>

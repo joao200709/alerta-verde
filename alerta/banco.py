@@ -27,7 +27,7 @@ class Catalogo:
     def listar(self, busca, tipo, pagina, guarda=None):
         termo = f"%{busca}%"
         with self.banco.transacao() as c:
-            c.execute("""SELECT * FROM area_verde
+            c.execute("""SELECT *, count(*) OVER () AS total FROM area_verde
                          WHERE ((%s::int IS NULL AND ativa) OR guarda_id=%s)
                            AND (%s='' OR tipo=%s)
                            AND (nome COLLATE "und-x-icu" ILIKE %s OR bairro COLLATE "und-x-icu" ILIKE %s OR endereco COLLATE "und-x-icu" ILIKE %s)
@@ -69,6 +69,15 @@ class Guardas:
     def __init__(self, banco, verificador_neutro):
         self.banco = banco
         self.neutro = verificador_neutro
+
+    def resumo(self, guarda):
+        with self.banco.transacao() as c:
+            c.execute("""SELECT count(d.id) AS recebidas,
+                                count(d.id) FILTER (WHERE d.situacao='EM_ATENDIMENTO') AS atendimento,
+                                count(DISTINCT a.id) FILTER (WHERE a.ativa) AS ativas
+                         FROM area_verde a LEFT JOIN denuncia d ON d.area_id=a.id
+                         WHERE a.guarda_id=%s""", (guarda,))
+            return c.fetchone()
 
     def autenticar(self, email, senha):
         with self.banco.transacao() as c:

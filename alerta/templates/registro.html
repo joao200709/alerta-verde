@@ -1,11 +1,17 @@
-{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Registrar denúncia{% endblock %}{% block corpo %}
-<a class="voltar" href="{{ url_for('escolher',area=area.id) }}">← Tipo de denúncia</a>
-<h1>Denúncia {{ tipo|rotulo|lower }}</h1><p>{{ area.nome }} · {{ area.endereco }} · {{ area.municipio }}/{{ area.uf }}</p>
-<form method="post" enctype="multipart/form-data" class="folha">{{ f.csrf() }}<input type="hidden" name="envio" value="{{ envio }}">
-{{ f.resumo(erro) }}{{ f.selecao('categoria','Categoria',categorias,erro) }}
-{{ f.longo('descricao','Descrição do problema (20 a 2.000 caracteres)',erro,20,2000) }}
-{{ f.campo('ponto_referencia','Ponto de referência',erro,min=3) }}
-<label>Foto do problema (opcional)<input type="file" name="foto" accept="image/png"><small>Uma foto ajuda o guarda a localizar e avaliar o problema. Envie um PNG de até 5 MB.</small>{{ f.falha(erro,'foto') }}</label>
-{% if tipo=='PUBLICA' %}{{ f.campo('nome','Seu nome',erro,max=120,min=3,autocomplete='name') }}{{ f.campo('email','Seu e-mail',erro,tipo='email',max=254,autocomplete='email') }}{{ f.campo('confirma_email','Confirme o e-mail do comprovante',erro,tipo='email',max=254) }}
-{% else %}<fieldset disabled><legend>Registro anônimo</legend><label>Nome<input disabled></label><label>E-mail<input disabled></label></fieldset>{% endif %}
-<button>Enviar denúncia</button></form>{% endblock %}
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% from "componentes.html" import faixa,selecionada %}
+{% block titulo %}Registrar denúncia{% endblock %}
+{% block faixa %}{{ faixa('Registrar denúncia','Descreva o problema encontrado na área selecionada.') }}{% endblock %}
+{% block corpo %}{{ selecionada(area,tipo) }}
+<form method="post" enctype="multipart/form-data" class="folha registro">{{ f.csrf() }}<input type="hidden" name="envio" value="{{ envio }}">{{ f.resumo(erro) }}
+<p class="nota">* Campo obrigatório</p>
+<div class="{{ 'duas' if tipo=='ANONIMA' }}"><section><h2>Sobre o problema</h2>
+<div class="{{ 'duas' if tipo=='PUBLICA' }}">{{ f.selecao('categoria','Categoria',categorias,erro) }}
+{{ f.campo('ponto_referencia','Ponto de referência',erro,min=3) }}</div>
+{{ f.longo('descricao','Descrição do problema',erro,20,2000) }}<small>De 20 a 2.000 caracteres.</small></section>
+<section><h2>Identificação</h2>{% if tipo=='PUBLICA' %}
+<div class="duas">{{ f.campo('nome','Nome',erro,max=120,min=3,autocomplete='name') }}{{ f.campo('email','E-mail',erro,tipo='email',max=254,autocomplete='email') }}</div>
+{{ f.campo('confirma_email','Confirme o e-mail do comprovante',erro,tipo='email',max=254) }}
+{% else %}<p>Por ser anônima, seu nome e e-mail não serão preenchidos.</p>
+<fieldset disabled><label>Nome<input disabled placeholder="Desabilitado na denúncia anônima"></label><label>E-mail<input disabled placeholder="Desabilitado na denúncia anônima"></label></fieldset>{% endif %}</section></div>
+<label>Foto (PNG, opcional)<input type="file" name="foto" accept="image/png" aria-describedby="ajuda-foto"><small id="ajuda-foto">Uma foto de até 5 MB ajuda o guarda a localizar o problema.</small>{{ f.falha(erro,'foto') }}<small class="falha" id="erro-foto" role="alert"></small></label>
+<div class="acoes fim"><a class="secundario" href="{{ url_for('escolher',area=area.id) }}">Voltar</a><button>Enviar denúncia</button></div></form>{% endblock %}

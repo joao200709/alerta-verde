@@ -30,7 +30,7 @@ def create_app(config=None):
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("ALERTA_CHAVE") or secrets.token_hex(32),
         DSN=os.environ.get("ALERTA_DSN", "dbname=alerta_verde user=alerta_app"),
-        FOTOS=Path(app.instance_path) / "fotos",
+        FOTOS=Path(app.instance_path) / "fotos", CAPAS_AREAS={},
         MAX_CONTENT_LENGTH=6 * 1024 * 1024, SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax", SESSION_COOKIE_SECURE=os.environ.get("ALERTA_HTTPS") == "1",
         SMTP_HOST=os.environ.get("SMTP_HOST"), SMTP_FROM=os.environ.get("SMTP_FROM"),
@@ -215,7 +215,7 @@ def create_app(config=None):
     @app.get("/painel")
     @restrito
     def painel():
-        return render_template("painel.html")
+        return render_template("painel.html", resumo=guardas.resumo(g.guarda["id"]))
 
     @app.get("/painel/areas")
     @restrito
@@ -237,7 +237,8 @@ def create_app(config=None):
             else:
                 flash("Área cadastrada." if area is None else "Alterações salvas.")
                 return redirect(url_for("minhas_areas"))
-        return render_template("editar.html", area=a, erro=erro), 422 if erro else 200
+        linhas = catalogo.listar("", "", 1, guarda)[:10]
+        return render_template("editar.html", area=a, linhas=linhas, erro=erro), 422 if erro else 200
 
     @app.route("/painel/areas/<int:area>/disponibilidade", methods=["GET", "POST"])
     @restrito

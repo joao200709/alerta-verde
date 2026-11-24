@@ -1,6 +1,8 @@
-{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Comprovante de registro{% endblock %}{% block corpo %}<div class="folha"><h1>Denúncia recebida</h1><p>{{ recibo.criado_em|data }}</p>
-<dl><dt>Protocolo</dt><dd class="codigo" id="protocolo">{{ recibo.protocolo }}</dd><dt>Código de acesso</dt><dd class="codigo" id="codigo">{{ codigo }}</dd></dl>
-<p>Guarde o protocolo e o código para acompanhar o atendimento.</p>
-{% if not novo %}<p class="aviso">Este envio já estava registrado.</p>{% elif enviado is sameas true %}<p>O comprovante foi enviado ao seu e-mail.</p>{% elif enviado is sameas false %}<p class="aviso">A denúncia foi registrada. O envio por e-mail falhou. Baixe o PDF abaixo.</p>{% endif %}
-<div class="acoes"><form action="{{ url_for('baixar') }}" method="post">{{ f.csrf() }}<input type="hidden" name="protocolo" value="{{ recibo.protocolo }}"><input type="hidden" name="codigo" value="{{ codigo }}"><button>Baixar PDF</button></form>
-<button type="button" id="copiar" hidden>Copiar código</button></div><p id="copia-status" role="status"></p><a href="{{ url_for('acompanhar') }}">Acompanhar denúncia →</a></div>{% endblock %}
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% from "componentes.html" import faixa %}
+{% block titulo %}Comprovante de registro{% endblock %}{% block faixa %}{{ faixa('Denúncia enviada com sucesso','A denúncia foi registrada. Guarde o protocolo e o código para acompanhar.') }}{% endblock %}
+{% block corpo %}<section class="folha recibo"><div class="sucesso" aria-hidden="true">✓</div><h2>Denúncia registrada!</h2>
+{% set data,hora=(recibo.criado_em|data).split(' às ') %}<dl class="dados-recibo">{% for chave,valor,id in [('Data',data,'data'),('Hora',hora,'hora'),('Protocolo',recibo.protocolo,'protocolo'),('Código de acesso',codigo,'codigo')] %}<div><dt>{{ chave }}</dt><dd id="{{ id }}">{{ valor }}</dd></div>{% endfor %}</dl>
+<p class="aviso">Guarde o protocolo e o código. Você precisa dos dois para acompanhar a denúncia.</p>
+{% if not novo %}<p>Este envio já estava registrado.</p>{% elif enviado is sameas true %}<p>O comprovante foi enviado ao seu e-mail.</p>{% elif enviado is sameas false %}<p>A denúncia foi registrada. O envio por e-mail falhou. Baixe o PDF abaixo.</p>{% endif %}
+<div class="acoes"><form action="{{ url_for('baixar') }}" method="post">{{ f.csrf() }}<input type="hidden" name="protocolo" value="{{ recibo.protocolo }}"><input type="hidden" name="codigo" value="{{ codigo }}"><button class="verde">Baixar comprovante (PDF)</button></form>
+<button type="button" class="secundario" id="copiar" hidden>Copiar código</button><a class="botao" href="{{ url_for('acompanhar') }}">Acompanhar denúncia</a><a class="secundario" href="{{ url_for('inicio') }}">Voltar ao início</a></div><p id="copia-status" role="status"></p></section>{% endblock %}

@@ -1,9 +1,10 @@
-{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Cadastro de área{% endblock %}{% block corpo %}<a class="voltar" href="{{ url_for('minhas_areas') }}">← Minhas áreas</a><div class="folha"><h1>{{ 'Editar área' if area else 'Cadastrar área' }}</h1><form method="post">{{ f.csrf() }}{{ f.resumo(erro) }}
+{% extends "base.html" %}{% import "campos.html" as f with context %}{% block titulo %}Gerenciar áreas verdes{% endblock %}
+{% block corpo %}<h1>Gerenciar áreas verdes</h1><p>Cadastre, edite e altere a situação das praças e parques das suas áreas.</p>
+<div class="duas edicao"><section class="folha"><div class="linha"><h2>Áreas cadastradas</h2><a class="botao" href="{{ url_for('editar') }}">+ Nova área verde</a></div>
+{% include 'tabela_areas.html' %}<a href="{{ url_for('minhas_areas') }}">Consultar todas as áreas</a></section>
+<section class="folha"><h2>{{ 'Editar área selecionada' if area else 'Nova área verde' }}</h2><form method="post">{{ f.csrf() }}{{ f.resumo(erro) }}
 {{ f.campo('nome','Nome da área',erro,area.get('nome',''),max=120,min=3) }}
-{{ f.selecao('tipo','Tipo',tipos_area,erro,area.get('tipo','')) }}
-{{ f.campo('endereco','Endereço',erro,area.get('endereco',''),min=5) }}
-{{ f.campo('bairro','Bairro',erro,area.get('bairro',''),max=100,min=2) }}
-{{ f.campo('municipio','Município',erro,area.get('municipio',''),max=100,min=2) }}
-{{ f.campo('uf','UF',erro,area.get('uf',''),max=2,min=2) }}
-{% if area.atualizado_em %}<p>Última alteração por {{ area.editor }} em {{ area.atualizado_em|data }}.</p>{% endif %}
-<div class="acoes"><button>Salvar área</button><a href="{{ url_for('minhas_areas') }}">Cancelar</a></div></form></div>{% endblock %}
+{{ f.selecao('tipo','Tipo',tipos_area,erro,area.get('tipo','')) }}{{ f.campo('endereco','Endereço',erro,area.get('endereco',''),min=5) }}
+<div class="duas">{{ f.campo('bairro','Bairro',erro,area.get('bairro',''),max=100,min=2) }}{{ f.campo('municipio','Município',erro,area.get('municipio',''),max=100,min=2) }}</div>
+{{ f.campo('uf','UF',erro,area.get('uf',''),max=2,min=2) }}{% if area.atualizado_em %}<p>Última alteração por {{ area.editor }} em {{ area.atualizado_em|data }}.</p>{% endif %}
+<div class="acoes fim"><a class="secundario" href="{{ url_for('minhas_areas') }}">Cancelar</a><button>Salvar área</button></div></form></section></div>{% endblock %}

@@ -1,0 +1,2 @@
+<form class="folha consulta" method="post" action="{{ url_for('acompanhar') }}">
+{{ f.csrf() }}{{ f.resumo(erro) }}{{ f.campo('protocolo','Protocolo',max=20) }}{{ f.campo('codigo','Código de acesso',tipo='password',max=128) }}<button>Consultar</button></form>

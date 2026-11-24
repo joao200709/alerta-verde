@@ -94,7 +94,11 @@ def enviar_comprovante(config, email, pdf):
     mensagem["From"] = config["SMTP_FROM"]
     mensagem["To"] = email
     mensagem["Subject"] = "Alerta Verde | Comprovante da sua denúncia"
-    mensagem.set_content("Recebemos sua denúncia. Guarde o comprovante anexo para acompanhar o atendimento.")
+    mensagem.set_content(
+        "Olá,\n\nSua denúncia foi registrada no Alerta Verde.\n\n"
+        "O comprovante em PDF está em anexo. Para acompanhar o atendimento, "
+        "acesse Acompanhar denúncia e informe o protocolo e o código de acesso do comprovante."
+    )
     mensagem.add_attachment(pdf, maintype="application", subtype="pdf", filename="comprovante.pdf")
     try:
         with smtplib.SMTP(config["SMTP_HOST"], int(config["SMTP_PORT"]), timeout=8) as cliente:

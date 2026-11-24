@@ -1,12 +1,23 @@
-{% extends "base.html" %}{% from "campos.html" import paginacao with context %}
+{% extends "base.html" %}{% from "campos.html" import paginacao with context %}{% from "componentes.html" import faixa,icone %}
 {% block titulo %}{{ 'Gerenciar áreas verdes' if privado else 'Consultar áreas verdes' }}{% endblock %}
+{% macro filtros() %}<form class="filtros" method="get" action="{{ url_for('minhas_areas' if privado else 'inicio') }}">
+<label class="pesquisa">{{ icone('busca') }}<input aria-label="Nome, bairro ou endereço" name="q" type="search" maxlength="200" value="{{ busca }}" placeholder="Digite o nome da área, bairro ou endereço"></label>
+<div class="opcoes" role="group" aria-label="Tipo de área">{% for valor,rotulo,simbolo in [('','Todas',''),('PRACA','Praça','banco'),('PARQUE','Parque','arvore')] %}
+<label><input type="radio" name="tipo" value="{{ valor }}" {% if tipo==valor %}checked{% endif %}><span>{% if simbolo %}{{ icone(simbolo) }}{% endif %}{{ rotulo }}</span></label>{% endfor %}</div><button>Buscar</button></form>{% endmacro %}
+{% block faixa %}{% if not privado %}{% call faixa('Encontre a praça ou o parque','Consulte as áreas verdes cadastradas e registre uma denúncia de forma simples.') %}{{ filtros() }}{% endcall %}{% endif %}{% endblock %}
 {% block corpo %}
-{% if privado %}<a class="voltar" href="{{ url_for('painel') }}">← Painel</a>{% endif %}
-<section class="busca"><h1>{{ 'Gerenciar áreas verdes' if privado else 'Encontre uma praça ou um parque' }}</h1>
-<p>{{ 'Consulte e edite as áreas sob sua responsabilidade.' if privado else 'Escolha uma área verde para comunicar um problema à equipe responsável.' }}</p>
-<form class="filtros" method="get"><label>Nome, bairro ou endereço<input type="search" name="q" maxlength="200" value="{{ busca }}" placeholder="Digite sua busca"></label>
-<label>Tipo de área<select name="tipo"><option value="">Todos os tipos</option>{% for t in tipos_area %}<option value="{{ t }}" {% if tipo==t %}selected{% endif %}>{{ t|rotulo }}</option>{% endfor %}</select></label><button>Buscar</button></form></section>
-<div class="linha"><h2>{{ 'Minhas áreas' if privado else 'Áreas verdes disponíveis' }}</h2>{% if privado %}<a class="botao" href="{{ url_for('editar') }}">Cadastrar área</a>{% endif %}</div>
-<div class="grade">{% for a in linhas %}<article class="cartao"><small>{{ a.tipo|rotulo }}{% if privado %} · {{ 'Ativa' if a.ativa else 'Inativa' }}{% endif %}</small><h3>{{ a.nome }}</h3><p>{{ a.endereco }}<br>{{ a.bairro }} · {{ a.municipio }}/{{ a.uf }}</p>
-<div class="acoes">{% if privado %}<a href="{{ url_for('editar',area=a.id) }}">Editar</a><a href="{{ url_for('disponibilidade',area=a.id) }}">{{ 'Desativar' if a.ativa else 'Ativar' }}</a>{% else %}<a class="botao" href="{{ url_for('escolher',area=a.id) }}">Fazer denúncia</a>{% endif %}</div></article>
-{% else %}<p class="vazio">Nenhuma área encontrada.</p>{% endfor %}</div>{{ paginacao(p,mais,busca,tipo) }}{% endblock %}
+{% if privado %}
+<h1>Gerenciar áreas verdes</h1><p>Cadastre, edite e altere a situação das praças e parques das suas áreas.</p>
+<div class="folha"><div class="linha"><h2>Áreas cadastradas</h2><a class="botao" href="{{ url_for('editar') }}">+ Nova área verde</a></div>{{ filtros() }}
+{% include 'tabela_areas.html' %}</div>
+{% else %}
+<div class="linha"><div><h2 class="titulo-lista">Áreas verdes disponíveis</h2><p>Veja as praças e parques ativos e faça sua denúncia.</p></div>{% if linhas or p==1 %}<span class="contagem">{{ linhas[0].total if linhas else 0 }} {{ 'área encontrada' if linhas and linhas[0].total==1 else 'áreas encontradas' }}</span>{% endif %}</div>
+<div class="grade areas">{% for a in linhas %}
+{% set capa=config.CAPAS_AREAS.get(a.id|string) %}
+<article class="cartao-area"><div class="capa">
+<img src="{{ url_for('static',filename='areas/' ~ (capa or ('acacias' if a.tipo=='PARQUE' else 'sol')) ~ '.webp') }}" alt="" {% if loop.index>3 %}loading="lazy"{% endif %}>
+<span class="tipo">{{ icone('banco' if a.tipo=='PRACA' else 'arvore') }}{{ a.tipo|rotulo }}</span>{% if not capa %}<small class="ilustrativa">Imagem ilustrativa</small>{% endif %}</div>
+<h3>{{ a.nome }}</h3><p class="local">{{ icone('local') }} {{ a.endereco }} · {{ a.bairro }} · {{ a.municipio }}/{{ a.uf }}</p>
+<div class="linha"><span class="ativa">Área ativa</span><a class="botao" href="{{ url_for('escolher',area=a.id) }}">Fazer denúncia</a></div></article>
+{% else %}<p class="vazio">Nenhuma área encontrada.</p>{% endfor %}</div>{% endif %}
+{{ paginacao(p,mais,busca,tipo) }}{% endblock %}

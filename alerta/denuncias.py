@@ -59,7 +59,8 @@ class CentralDenuncias:
             c.execute("""SELECT d.id,d.protocolo,a.nome AS area,d.categoria,d.situacao,d.criado_em
                          FROM denuncia d JOIN area_verde a ON a.id=d.area_id WHERE a.guarda_id=%s
                          AND (%s='' OR d.situacao=%s)
-                         AND (d.protocolo ILIKE %s OR a.nome COLLATE "und-x-icu" ILIKE %s OR d.categoria ILIKE %s)
+                         AND (d.protocolo ILIKE %s OR a.nome COLLATE "und-x-icu" ILIKE %s
+                              OR d.categoria ILIKE translate(%s, 'çãÇÃ', 'caCA'))
                          ORDER BY d.criado_em DESC,d.id DESC LIMIT 11 OFFSET %s""",
                       (guarda, situacao, situacao, termo, termo, termo, (pagina-1)*10))
             return c.fetchall()

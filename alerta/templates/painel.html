@@ -1,3 +1,8 @@
-{% extends "base.html" %}{% block titulo %}Painel do guarda{% endblock %}{% block corpo %}<h1>Painel do guarda</h1><p>{{ g.guarda.nome }}</p><div class="grade">
-<article class="cartao"><h2>Denúncias recebidas</h2><p>Consulte os registros, responda ao visitante e atualize a situação.</p><a class="botao" href="{{ url_for('fila') }}">Ver denúncias</a></article>
-<article class="cartao"><h2>Gerenciar áreas verdes</h2><p>Cadastre praças e parques, edite endereços ou altere a disponibilidade.</p><a class="botao" href="{{ url_for('minhas_areas') }}">Ver minhas áreas</a></article></div>{% endblock %}
+{% extends "base.html" %}{% from "componentes.html" import icone %}{% block titulo %}Painel administrativo{% endblock %}
+{% block corpo %}<h1>Painel administrativo</h1><p>Gerencie as denúncias e as áreas verdes sob sua responsabilidade.</p>
+<div class="metricas">{% for rotulo,valor,simbolo in [('Denúncias recebidas',resumo.recebidas,'alerta'),('Denúncias em atendimento',resumo.atendimento,'tempo'),('Áreas ativas',resumo.ativas,'arvore')] %}
+<div><span class="pictograma">{{ icone(simbolo) }}</span><div>{{ rotulo }}<strong>{{ valor }}</strong></div></div>{% endfor %}</div>
+{% for titulo,texto,imagem,rota,acao in [
+('Denúncias recebidas','Visualize, analise e acompanhe as denúncias registradas pelos cidadãos.','acacias','fila','Acessar denúncias recebidas'),
+('Gerenciar áreas verdes','Cadastre, edite e mantenha as informações sobre praças e parques.','sol','minhas_areas','Acessar áreas verdes')] %}
+<article class="folha atalho"><img src="{{ url_for('static',filename='areas/'~imagem~'.webp') }}" alt=""><div><h2>{{ titulo }}</h2><p>{{ texto }}</p><a class="botao" href="{{ url_for(rota) }}">{{ acao }} →</a></div></article>{% endfor %}{% endblock %}
