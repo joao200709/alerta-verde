@@ -1,8 +1,26 @@
 # Instalação, e-mail e recuperação
 
+## Rodar a demonstração no Windows
+
+Usamos Python 3.14 e PostgreSQL 18 com suporte a ICU. Depois de instalar os dois, abra o PowerShell na pasta que contém `demonstracao.py` e execute os comandos abaixo.
+
+```powershell
+py -3.14 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe demonstracao.py
+```
+
+Abra [o Alerta Verde no navegador](http://127.0.0.1:5000/). Na primeira execução, o script aplica os cinco arquivos SQL em um banco de demonstração e cadastra seis áreas e uma conta de guarda. O terminal mostra o e-mail e a senha dessa conta. Deixe a janela aberta enquanto usa o site. Pressione `Ctrl+C` para encerrar.
+
+Se o script não encontrar o PostgreSQL, ajuste o caminho abaixo para a pasta `bin` da sua instalação e rode a demonstração de novo.
+
+```powershell
+$env:PG_BIN = 'C:\Program Files\PostgreSQL\18\bin'
+```
+
 ## Usar um PostgreSQL já instalado
 
-A demonstração descrita no README prepara seu próprio banco. Para instalar em um servidor PostgreSQL com ICU, use um banco dedicado e um administrador autorizado. Se o banco da dupla já contém as estruturas, compare as definições antes de aplicar qualquer script. Os nomes das três roles são globais na instância PostgreSQL. O requisito 4 altera privilégios do schema public e deve ser aplicado apenas no banco dedicado.
+Use um banco dedicado no PostgreSQL e uma conta com permissão de administrador. Se as tabelas já existirem, compare as definições antes de executar os scripts. As três contas do projeto (chamadas de *roles* no PostgreSQL) são registradas na instância inteira. O arquivo de permissões altera o acesso ao schema `public` do banco em que é executado.
 
 Em um terminal com `psql` no PATH, crie um banco vazio e entre nele. Execute a partir da raiz do projeto.
 
@@ -30,7 +48,7 @@ COMMIT;
 
 Os arquivos do trabalho original trazem uma senha de exemplo para as contas. Nesta entrega as contas são criadas com LOGIN e a senha é definida no prompt privado do psql. O índice de unicidade usa a collation ICU `und-x-icu` para que as letras acentuadas também sejam convertidas em um banco inicializado com locale C. Em uma instalação anterior com esses índices já existentes, mantenha o esquema original se a conversão regional já atender ao teste de duplicidade do projeto.
 
-Crie o ambiente Python conforme o README. Abaixo, use PowerShell 7 no terminal de desenvolvimento. A chave do site deve ser gerada uma vez e preservada no gerenciador de segredos do ambiente. Para o servidor local da disciplina:
+Crie o ambiente Python e instale as dependências com os dois primeiros comandos da [demonstração](#rodar-a-demonstração-no-windows). Use PowerShell 7 para os comandos abaixo. Gere a chave do site uma vez e guarde-a no gerenciador de segredos do ambiente.
 
 ```powershell
 $env:PGHOST = '127.0.0.1'
@@ -50,7 +68,7 @@ Antes de iniciar o site, configure `SMTP_HOST`, `SMTP_PORT` (padrão 587), `SMTP
 
 ## HTTPS e dados locais
 
-Na demonstração o site escuta somente no loopback. Para hospedar, use um servidor WSGI de um único processo com threads, terminação HTTPS, `ALERTA_HTTPS=1` e uma `ALERTA_CHAVE` persistente. A sessão de guarda expira após 30 minutos sem atividade interna. Quando houver proxy, configure a origem do IP de modo que seja aceita apenas do proxy confiável. A limitação de acompanhamento usa o endereço remoto observado pela aplicação.
+Na demonstração, o site só abre no computador onde está rodando. Para hospedar, use um servidor WSGI de um único processo com threads, HTTPS, `ALERTA_HTTPS=1` e uma `ALERTA_CHAVE` persistente. A sessão do guarda termina após 30 minutos sem atividade no painel. Se houver um proxy, aceite a informação de IP apenas de um proxy confiável. O site usa o IP que recebe para contar as tentativas de consulta.
 
 Fotos ficam em `instance/fotos` na instalação normal e em `instance/demo/fotos` na demonstração. Restrinja acesso a essa pasta e aos arquivos de configuração local. A aplicação entrega cada foto depois de autorizar a consulta.
 

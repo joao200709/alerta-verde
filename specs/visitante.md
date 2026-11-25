@@ -2,7 +2,7 @@
 
 ## Pesquisa e escolha
 
-Ao abrir a página inicial, o visitante vê apenas áreas ativas ordenadas por nome e ID. O sistema combina a busca por nome, bairro ou endereço com o filtro Praça ou Parque. Cada página possui no máximo dez resultados. Uma busca vazia de resultados apresenta “Nenhuma área encontrada”. O cartão leva à escolha de identificação e mantém a área selecionada durante o registro.
+Na página inicial, o visitante vê as áreas ativas em ordem alfabética. A busca por nome, bairro ou endereço pode ser combinada com o filtro de praça ou parque. Cada página mostra até dez resultados. Se nenhum resultado aparecer, o site exibe “Nenhuma área encontrada”. Ao clicar em **Fazer denúncia**, o visitante escolhe o tipo de denúncia com a área já selecionada.
 
 ## Registro e privacidade
 
@@ -14,11 +14,15 @@ Ao abrir a página inicial, o visitante vê apenas áreas ativas ordenadas por n
 | Identificação | Nome de 3 a 120 caracteres e e-mail válido de até 254 na identificada. O visitante confirma o endereço de entrega do PDF. Na anônima, o servidor descarta valores enviados nesses campos. |
 | Foto opcional | Uma PNG de até 5 MiB. O servidor confere o conteúdo e recodifica a imagem. O processamento aceita até 24 megapixels. |
 
-O sistema confirma que a área continua ativa antes de gravar. A transação persiste a denúncia e o recebimento automático gerado pela trigger. O mesmo token retorna o protocolo anterior. A confirmação mostra data, hora, protocolo, código e download em PDF. Somente o registro identificado envia o comprovante ao SMTP configurado. Se esse envio falhar, o visitante pode baixar o PDF na tela. Campos textuais permanecem preenchidos após erro de validação. O navegador exige selecionar o arquivo novamente.
+Antes de gravar, o site confere se a área continua ativa. O banco salva a denúncia e cria o primeiro evento do histórico por meio da trigger. Se o visitante repetir o mesmo envio, recebe o protocolo anterior.
+
+A confirmação mostra data, hora, protocolo e código de acesso, com um botão para baixar o PDF. Na denúncia identificada, o site também tenta enviar o comprovante por e-mail quando o serviço está configurado. O botão de download continua disponível se o e-mail falhar. Se o site devolver o formulário com um erro de preenchimento, os campos de texto continuam preenchidos. A foto precisa ser selecionada de novo.
 
 ## Acompanhamento
 
-O visitante fornece protocolo e código em um formulário POST. O resultado exibe área, descrição, referência, categoria, foto autorizada e histórico cronológico. Cada evento indica a situação, a hora e “Sistema” ou “Guarda responsável”. Uma credencial incorreta produz a mesma mensagem para protocolos existentes e inexistentes. Cinco erros para o mesmo IP e protocolo em 15 minutos bloqueiam a consulta por 15 minutos. O resultado omite nome, e-mail e código. A autorização da foto tem duração máxima de 30 minutos.
+O visitante informa o protocolo e o código de acesso. O formulário usa POST para manter o código fora do endereço da página. Com os dados corretos, o site mostra a área, a descrição, a referência, a categoria, a foto quando houver e os eventos em ordem. Cada evento mostra a situação, a hora e o autor como “Sistema” ou “Guarda responsável”.
+
+A tela protege o nome, o e-mail e o código de acesso. A mensagem é a mesma sempre que a combinação informada estiver incorreta. Cinco erros para o mesmo IP e protocolo em 15 minutos bloqueiam a consulta por 15 minutos. A permissão para ver a foto vale por até 30 minutos.
 
 ## Cenário de aceite
 

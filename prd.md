@@ -2,32 +2,36 @@
 
 ## Problema e resultado esperado
 
-Quem encontra lixo, vandalismo ou danos em uma praça precisa identificar onde registrar a ocorrência e como saber se houve atendimento. O Alerta Verde liga o visitante ao guarda responsável pela área. O resultado esperado é um protocolo verificável, com histórico desde o recebimento até a conclusão.
+Quem encontra lixo, vandalismo ou danos em uma praça pode fazer uma denúncia pelo Alerta Verde. O guarda responsável recebe o registro pelo painel. Com o protocolo e o código de acesso, o visitante acompanha o caso desde o recebimento até a conclusão.
 
 ## Públicos e acesso
 
-O visitante pesquisa áreas ativas pelo navegador. Pode se identificar para receber o PDF por e-mail ou permanecer anônimo e guardar o comprovante por conta própria. Somente quem apresenta protocolo e código acompanha a ocorrência. O guarda tem uma conta criada pela equipe e trabalha nas áreas vinculadas à sua conta. A equipe usa uma conta PostgreSQL própria para instalação e outra para a aplicação.
+O visitante pesquisa áreas ativas pelo navegador. Pode se identificar para receber o PDF por e-mail ou fazer a denúncia anônima e baixar o comprovante na hora. Para consultar uma denúncia, precisa do protocolo e do código de acesso. A equipe cria as contas dos guardas, e cada guarda atende as áreas sob sua responsabilidade. A instalação e o site usam contas diferentes no PostgreSQL.
 
 ## Escopo e critérios de aceite
 
-| ID | Funcionalidade | Evidência observável |
+| ID | Funcionalidade | O que deve acontecer |
 | --- | --- | --- |
 | RF001 | Consultar áreas verdes | Buscar por nome, bairro ou endereço, filtrar tipo e navegar por páginas de até dez áreas ativas em ordem alfabética. |
-| RF002 | Registrar denúncia | Escolher o tipo antes do formulário. O registro gera um protocolo e um PDF e aceita uma foto PNG opcional. Repetir o envio mantém o protocolo. Somente a identificada gera e-mail. |
+| RF002 | Registrar denúncia | O visitante escolhe o tipo antes de preencher o formulário e pode anexar uma foto PNG. Depois do envio, recebe protocolo, código de acesso e PDF. Se repetir o envio, recebe o mesmo protocolo. O site envia o PDF por e-mail somente para denúncias identificadas, quando o envio estiver configurado. |
 | RF003 | Acompanhar denúncia | O par protocolo/código permite consultar situação, foto e histórico sem expor identidade ou código no resultado. |
 | RF004 | Autenticar guarda | Uma conta ativa entra no painel. Cinco erros em 15 minutos bloqueiam novos acessos por 15 minutos. A sessão termina ao sair ou após 30 minutos de inatividade. |
 | RF005 | Gerenciar áreas | Cadastrar, editar, ativar e confirmar desativação. Uma área inativa deixa a busca pública e conserva seus atendimentos. |
 | RF006 | Consultar denúncias no painel | O guarda filtra suas denúncias por situação, busca protocolo, área ou categoria e abre detalhes sem mudar o estado. |
-| RF007 | Atualizar atendimento | Responder ou mudar a situação segundo as transições permitidas. Edições simultâneas exigem recarregar a versão antiga. |
+| RF007 | Atualizar atendimento | O guarda pode responder e, se quiser, escolher uma mudança de situação permitida. Se alguém atualizar a denúncia enquanto ele estiver editando, precisa recarregar a página antes de salvar. |
 | RF008 | Manter histórico | O recebimento é automático. Cada atualização acrescenta um evento com data, situação, texto e autor na mesma transação. |
 
 ## Regras do produto
 
-A denúncia identificada corresponde ao valor `PUBLICA` no SQL. Seu nome e e-mail são visíveis ao guarda responsável. A modalidade `ANONIMA` persiste ambos os campos como NULL. Ambas permitem acompanhar o atendimento. Apenas áreas ativas recebem novos registros. As situações finais são Resolvida e Rejeitada. O projeto do semestre prevê o envio do comprovante identificado por e-mail e a consulta de mudanças pelo próprio visitante.
+A denúncia identificada aparece como `PUBLICA` no SQL. Só o guarda responsável pode ver o nome e o e-mail do visitante. Na denúncia `ANONIMA`, o banco guarda esses campos como `NULL`. Nos dois tipos, o visitante pode acompanhar o atendimento. Apenas áreas ativas recebem novas denúncias. Quando a situação chega a **Resolvida** ou **Rejeitada**, o atendimento é encerrado.
 
 ## Metas de qualidade
 
-A interface deve funcionar entre 360 e 1.920 px, com teclado, foco visível e mensagens de validação. O objetivo de carga é p95 de até 3 s nas consultas e 5 s nos registros, com 20 usuários simultâneos e uma base de 1.000 denúncias. A equipe deve manter cópia diária separada do banco e das fotos, com teste de recuperação mensal, RPO de 24 horas e RTO de 4 horas. O relatório de validação distingue medições e obrigações operacionais.
+A interface deve funcionar entre 360 e 1.920 px. Quem usa o teclado precisa ver qual elemento está em foco, e os formulários devem indicar os erros de preenchimento.
+
+Com 20 usuários ao mesmo tempo e uma base de 1.000 denúncias, pelo menos 95% das consultas devem terminar em até 3 segundos e 95% dos registros em até 5 segundos. Esse é o critério de desempenho chamado p95.
+
+A equipe deve guardar uma cópia diária do banco e das fotos em um local separado e testar a recuperação todo mês. Em caso de perda, as metas são recuperar os dados com no máximo 24 horas de defasagem (RPO) e voltar a funcionar em até 4 horas (RTO). [Resultados dos testes](docs/validacao.md)
 
 ## Referências do projeto
 
