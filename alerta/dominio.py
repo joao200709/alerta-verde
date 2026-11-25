@@ -66,14 +66,20 @@ class Denuncia(ABC):
     descricao: str
     ponto_referencia: str
 
-    @classmethod
-    def do_formulario(cls, tipo, dados):
-        comuns = (escolha(dados, "categoria", CATEGORIAS), texto(dados, "descricao", 20, 2000),
-                  texto(dados, "ponto_referencia", 3, 200))
+    @staticmethod
+    def do_formulario(tipo, dados):
+        categoria = escolha(dados, "categoria", CATEGORIAS)
+        descricao = texto(dados, "descricao", 20, 2000)
+        ponto_referencia = texto(dados, "ponto_referencia", 3, 200)
+
         if tipo == "ANONIMA":
-            return DenunciaAnonima(*comuns)
+            return DenunciaAnonima(categoria, descricao, ponto_referencia)
+
         if tipo == "PUBLICA":
-            return DenunciaPublica(*comuns, texto(dados, "nome", 3, 120), email_valido(dados, "email"))
+            nome = texto(dados, "nome", 3, 120)
+            email = email_valido(dados, "email")
+            return DenunciaPublica(categoria, descricao, ponto_referencia, nome, email)
+
         raise Regra("Escolha o tipo da denúncia.")
 
     @abstractmethod
@@ -81,6 +87,7 @@ class Denuncia(ABC):
         """Retorna tipo, nome e e-mail que podem ser persistidos."""
 
 
+@dataclass(frozen=True)
 class DenunciaAnonima(Denuncia):
     def identificacao(self):
         return "ANONIMA", None, None

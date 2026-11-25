@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import psycopg
 from psycopg.rows import dict_row
 
-from .dominio import Atendimento, Regra
+from .dominio import Regra
 from .seguranca import JANELA, confere
 
 
