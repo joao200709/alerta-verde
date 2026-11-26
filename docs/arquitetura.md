@@ -31,6 +31,8 @@ flowchart LR
 - O site usa Argon2id para proteger senhas e conferir códigos de acompanhamento. No registro, gera o código de acesso a partir do formulário e de uma chave do servidor. O PostgreSQL guarda o verificador do código e o hash do token de envio. [Senhas e sessões](../alerta/seguranca.py) · [Geração do código](../alerta/denuncias.py#L16)
 - [Scripts SQL](../sql/) criam as quatro tabelas, as chaves e restrições, os índices, a trigger, as contas e a view. O painel consulta as tabelas com o filtro do guarda. A conta `alerta_leitura` pode consultar a view para relatórios.
 
+A escolha de usar SQL direto com Psycopg está registrada no [ADR 001](adr-001-sql-direto.md).
+
 ## O que acontece quando duas ações ocorrem ao mesmo tempo
 
 Se alguém tentar denunciar enquanto o guarda desativa a área, o banco executa as duas operações em ordem. O registro usa `FOR SHARE` para manter a área estável entre a conferência e a gravação. Se a área já estiver inativa na hora da conferência, o site recusa o registro.

@@ -21,5 +21,7 @@ O guarda pode escrever uma resposta de 10 a 500 caracteres e manter a situação
 
 ## Cenário de aceite
 
-Com dois guardas e áreas distintas, verifique os links diretos de edição, denúncia e foto. Só o responsável tem acesso. Abra o mesmo atendimento em duas abas e salve na primeira. Tente salvar na segunda e confira se o site pede para recarregar a página. Depois de encerrar o caso, confirme que ainda é possível ler o histórico e que a opção de responder sumiu.
+1. Com dois guardas responsáveis por áreas diferentes, confirme que cada um só consegue abrir as denúncias, as fotos e as telas de edição das próprias áreas, inclusive por link direto.
+2. Abra a mesma denúncia em duas abas com a conta do guarda responsável. Salve uma resposta na primeira e tente salvar na segunda. O site deve pedir que você recarregue a página.
+3. Mude a situação para **Resolvida** ou **Rejeitada** a partir de uma situação que permita a mudança. O histórico deve continuar visível e a opção de responder deve sumir.
 

@@ -9,5 +9,5 @@ Desenvolvemos o Alerta Verde para o projeto integrado de Programação Orientada
 ## Material da entrega
 
 - **Aplicação** — [Código-fonte em Python e Flask](alerta/) com PostgreSQL. [Como rodar a demonstração](docs/operacao.md#rodar-a-demonstração-no-windows).
-- **Documentação** — [Requisitos do sistema (PRD)](prd.md), [arquitetura e pilares de POO](docs/arquitetura.md) e [especificações das funcionalidades](specs/).
+- **Documentação** — [Requisitos do sistema (PRD)](prd.md), [arquitetura e pilares de POO](docs/arquitetura.md), [decisão de acesso ao banco (ADR)](docs/adr-001-sql-direto.md) e [especificações das funcionalidades](specs/).
 - **Banco de Dados** — [Scripts SQL](sql/) e [PDF para avaliação](entrega/BD_Alerta_Verde.pdf) com as tabelas, a trigger, o índice, as contas e permissões e a view.

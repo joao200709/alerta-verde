@@ -14,12 +14,14 @@ O visitante pesquisa áreas ativas pelo navegador. Pode se identificar para rece
 | --- | --- | --- |
 | RF001 | Consultar áreas verdes | Buscar por nome, bairro ou endereço, filtrar tipo e navegar por páginas de até dez áreas ativas em ordem alfabética. |
 | RF002 | Registrar denúncia | O visitante escolhe o tipo antes de preencher o formulário e pode anexar uma foto PNG. Depois do envio, recebe protocolo, código de acesso e PDF. Se repetir o envio, recebe o mesmo protocolo. O site envia o PDF por e-mail somente para denúncias identificadas, quando o envio estiver configurado. |
-| RF003 | Acompanhar denúncia | O par protocolo/código permite consultar situação, foto e histórico sem expor identidade ou código no resultado. |
+| RF003 | Acompanhar denúncia | Com o protocolo e o código de acesso, o visitante vê a situação, a foto quando houver e o histórico. A tela protege a identidade do denunciante e o código de acesso. |
 | RF004 | Autenticar guarda | Uma conta ativa entra no painel. Cinco erros em 15 minutos bloqueiam novos acessos por 15 minutos. A sessão termina ao sair ou após 30 minutos de inatividade. |
 | RF005 | Gerenciar áreas | Cadastrar, editar, ativar e confirmar desativação. Uma área inativa deixa a busca pública e conserva seus atendimentos. |
 | RF006 | Consultar denúncias no painel | O guarda filtra suas denúncias por situação, busca protocolo, área ou categoria e abre detalhes sem mudar o estado. |
 | RF007 | Atualizar atendimento | O guarda pode responder e, se quiser, escolher uma mudança de situação permitida. Se alguém atualizar a denúncia enquanto ele estiver editando, precisa recarregar a página antes de salvar. |
 | RF008 | Manter histórico | O recebimento é automático. Cada atualização acrescenta um evento com data, situação, texto e autor na mesma transação. |
+
+Os fluxos passo a passo e os cenários de teste estão nas especificações do [visitante](specs/visitante.md) e do [guarda](specs/guarda.md).
 
 ## Regras do produto
 

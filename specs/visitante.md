@@ -12,7 +12,7 @@ Na página inicial, o visitante vê as áreas ativas em ordem alfabética. A bus
 | Descrição | De 20 a 2.000 caracteres após remover espaços nas extremidades |
 | Ponto de referência | De 3 a 200 caracteres |
 | Identificação | Nome de 3 a 120 caracteres e e-mail válido de até 254 na identificada. O visitante confirma o endereço de entrega do PDF. Na anônima, o servidor descarta valores enviados nesses campos. |
-| Foto opcional | Uma PNG de até 5 MiB. O servidor confere o conteúdo e recodifica a imagem. O processamento aceita até 24 megapixels. |
+| Foto opcional | Um arquivo PNG de até 5 MiB e 24 megapixels. O servidor confere o formato e gera uma nova cópia da imagem sem os metadados. |
 
 Antes de gravar, o site confere se a área continua ativa. O banco salva a denúncia e cria o primeiro evento do histórico por meio da trigger. Se o visitante repetir o mesmo envio, recebe o protocolo anterior.
 
@@ -26,5 +26,9 @@ A tela protege o nome, o e-mail e o código de acesso. A mensagem é a mesma sem
 
 ## Cenário de aceite
 
-Registre uma denúncia anônima, repita o mesmo envio, baixe o PDF e consulte o protocolo. Deve existir uma única denúncia e um único evento de recebimento. Acompanhe novamente depois de uma resposta do guarda para verificar a atualização.
+1. Registre uma denúncia anônima. Na confirmação, confira a data, a hora, o protocolo e o código. Baixe o PDF e confira se ele contém os mesmos dados.
+2. Em **Acompanhar denúncia**, use o protocolo e o código. A consulta deve mostrar a situação **Recebida** e um evento inicial no histórico.
+3. Depois que o guarda responder, consulte de novo. A resposta deve aparecer com o autor **Guarda responsável**.
+
+O [teste de integração](../tests/test_integracao.py#L68) também repete o envio do mesmo formulário e verifica se o site devolve o comprovante anterior e mantém um único evento de recebimento.
 
